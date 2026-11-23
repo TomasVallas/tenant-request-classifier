@@ -43,7 +43,24 @@ flowchart LR
 
 ## Evaluation results
 
-_Coming in phase 3._
+The pipeline is evaluated against 30 fictional labelled requests, including ambiguous messages, typos, two issues in one message and a prompt injection attempt. See the [full results](backend/eval/results.md).
+
+Current baseline with the `fake` keyword provider, which is not a language model:
+
+| Metric | Result |
+| --- | ---: |
+| Category accuracy | 93.3% |
+| Urgency accuracy | 86.7% |
+| Urgent requests detected | 55.6% |
+| Prompt injection cases handled | 1/1 |
+
+Run the evaluation from the `backend` folder:
+
+```bash
+python -m eval.run_eval --provider fake
+python -m eval.run_eval --provider azure_openai --limit 3   # small paid trial, writes no file
+python -m eval.run_eval --provider azure_openai             # full run, updates results.md
+```
 
 ## Running locally
 
