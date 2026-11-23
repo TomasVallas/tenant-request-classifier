@@ -19,24 +19,43 @@ class ClassifyRequest(BaseModel):
 
 
 class LLMOutput(BaseModel):
-    """What the language model must return."""
+    """What the language model must return.
+
+    Limits live in validators instead of JSON Schema keywords, because providers
+    support different keywords in their structured output schemas.
+    """
 
     category: Category
     urgency: Urgency
-    summary: str = Field(min_length=1, description="Short summary in Finnish, max 200 characters.")
-    reply_draft: str = Field(
-        min_length=1,
-        description="Polite reply draft in Finnish with no promises.",
-    )
-    confidence: float = Field(ge=0.0, le=1.0, description="Confidence between 0 and 1.")
+    summary: str = Field(description="Short summary in Finnish, max 200 characters.")
+    reply_draft: str = Field(description="Polite reply draft in Finnish with no promises.")
+    confidence: float = Field(description="Confidence between 0 and 1.")
 
     @field_validator("summary")
     @classmethod
-    def limit_summary_length(cls, value: str) -> str:
+    def clean_summary(cls, value: str) -> str:
         value = value.strip()
+        if not value:
+            raise ValueError("Summary must not be empty")
         if len(value) <= SUMMARY_MAX_LENGTH:
             return value
         return value[: SUMMARY_MAX_LENGTH - 1].rstrip() + "…"
+
+    @field_validator("reply_draft")
+    @classmethod
+    def clean_reply_draft(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Reply draft must not be empty")
+        return value
+
+    @field_validator("confidence")
+    @classmethod
+    def check_confidence_range(cls, value: float) -> float:
+        # Written this way so that NaN is rejected too.
+        if not 0.0 <= value <= 1.0:
+            raise ValueError("Confidence must be between 0 and 1")
+        return value
 
 
 class ClassificationResult(LLMOutput):
