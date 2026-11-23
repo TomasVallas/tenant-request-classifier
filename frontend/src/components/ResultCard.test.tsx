@@ -68,6 +68,28 @@ describe('ResultCard', () => {
     expect(screen.getByRole('heading', { name: 'Tulos' })).toHaveFocus()
   })
 
+  it('scrolls a result that appears low on the screen into view', () => {
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    const rect = vi
+      .spyOn(Element.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ top: window.innerHeight } as DOMRect)
+
+    render(<ResultCard result={makeResult()} isApproved={false} onApprove={vi.fn()} />)
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' })
+    rect.mockRestore()
+  })
+
+  it('does not scroll a result that is already visible', () => {
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+
+    render(<ResultCard result={makeResult()} isApproved={false} onApprove={vi.fn()} />)
+
+    expect(scrollIntoView).not.toHaveBeenCalled()
+  })
+
   it('lets the user edit and copy the reply', async () => {
     const user = userEvent.setup()
     render(<ResultCard result={makeResult()} isApproved={false} onApprove={vi.fn()} />)

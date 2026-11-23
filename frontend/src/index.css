@@ -384,6 +384,10 @@ h2:focus {
 }
 
 /* Result */
+.result .section-title {
+  scroll-margin-top: var(--space-5);
+}
+
 .result__facts {
   display: grid;
   gap: var(--space-3) var(--space-5);

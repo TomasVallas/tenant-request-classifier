@@ -36,9 +36,15 @@ export function ResultCard({ result, isApproved, onApprove }: ResultCardProps) {
   const isLowConfidence = result.rule_hits.includes('low_confidence')
   const confidencePercent = Math.round(result.confidence * 100)
 
-  // Moves keyboard and screen reader users to the new result, and scrolls to it on phones.
+  // Moves keyboard and screen reader users to the new result.
   useEffect(() => {
-    headingRef.current?.focus()
+    const heading = headingRef.current
+    if (!heading) return
+    heading.focus({ preventScroll: true })
+    // On phones the result is below the form, so bring it to the top of the screen.
+    if (heading.getBoundingClientRect().top > window.innerHeight * 0.4) {
+      heading.scrollIntoView({ block: 'start' })
+    }
   }, [])
 
   useEffect(() => {

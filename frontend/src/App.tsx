@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError, classify } from './api.ts'
 import { ExampleButtons } from './components/ExampleButtons.tsx'
 import { HistoryList } from './components/HistoryList.tsx'
@@ -21,9 +21,16 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const errorRef = useRef<HTMLParagraphElement>(null)
+
   useEffect(() => {
     saveHistory(history)
   }, [history])
+
+  // On phones the result area is below the form, so make sure the error is seen.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [error])
 
   async function handleSubmit(requestText: string) {
     setIsLoading(true)
@@ -81,7 +88,7 @@ export default function App() {
           {!isLoading && error && (
             <>
               <h2 className="section-title">Tulos</h2>
-              <p className="notice notice--error" role="alert">
+              <p ref={errorRef} className="notice notice--error" role="alert">
                 {error}
               </p>
             </>

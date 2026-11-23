@@ -83,6 +83,19 @@ describe('App', () => {
     expect(screen.getByText('Ei vielä käsiteltyjä pyyntöjä.')).toBeInTheDocument()
   })
 
+  it('scrolls an error into view', async () => {
+    const user = userEvent.setup()
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView')
+    classifyMock.mockRejectedValue(new ApiError('Palvelin ei vastaa.'))
+    render(<App />)
+
+    await submitExample(user)
+    await screen.findByRole('alert')
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' })
+    scrollIntoView.mockRestore()
+  })
+
   it('marks an approved request in history without sending anything', async () => {
     const user = userEvent.setup()
     classifyMock.mockResolvedValue(makeResult())
