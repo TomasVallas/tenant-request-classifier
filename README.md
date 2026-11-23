@@ -4,6 +4,8 @@
 
 > **Tiivistelmä:** Sovellus luokittelee vuokralaisen suomenkielisen palvelupyynnön, arvioi sen kiireellisyyden ja ehdottaa kohteliasta vastausta. Kielimalli vain ehdottaa, deterministiset säännöt ja ihminen päättävät, eikä sovellus koskaan lähetä vastausta itse. Kyseessä on portfoliodemo kuvitteelliselle vuokrataloyhtiölle, ja kaikki data on keksittyä.
 
+**[Live demo](https://zealous-glacier-07242fa0f.8.azurestaticapps.net)** · **[Architecture](docs/architecture.md)** · **[Evaluation results](backend/eval/results.md)**
+
 **Stack:** React, TypeScript, Python, FastAPI, LangChain, Azure OpenAI / OpenAI / Anthropic, Docker, GitHub Actions, Azure Container Apps and Static Web Apps.
 
 ## What it does and why
@@ -36,21 +38,13 @@ Example result for *"Kylpyhuoneessa on vesivuoto ja vettä valuu käytävään, 
 
 ## Screenshot
 
-<!--
-To add the screenshot:
-1. Run the app, select the "Kiireellinen" example and classify it.
-2. Press Win+Shift+S and capture the page.
-3. Save the image as docs/images/screenshot.png.
-4. Replace the text below with: ![Classified tenant request](docs/images/screenshot.png)
--->
-
-_A screenshot will be added with the live demo._
+![An urgent tenant request classified by the language model, with a human review notice and an editable reply draft](docs/images/screenshot.png)
 
 ## Live demo
 
-<!-- Replace the text below with the Static Web Apps address after deployment. -->
+**[Open the live demo](https://zealous-glacier-07242fa0f.8.azurestaticapps.net)**
 
-_The link will be added after deployment. See the [Azure deployment guide](docs/deploy-azure.md)._
+Use fictional text only. The first request can be slow because the backend scales to zero when idle.
 
 ## Architecture
 
