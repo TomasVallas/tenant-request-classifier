@@ -17,6 +17,8 @@ Tähän on koottu projektissa käytetyt React- ja TypeScript-käsitteet. Tavoitt
 - [x] Tapahtumankäsittely ja lomakkeet
 - [x] Listojen renderöinti ja `key`
 - [x] Ehdollinen renderöinti
+- [x] Fragment
+- [x] `createRoot` ja `StrictMode`
 
 ### TypeScript
 
@@ -28,6 +30,10 @@ Tähän on koottu projektissa käytetyt React- ja TypeScript-käsitteet. Tavoitt
 - [x] Geneeriset tyypit, kuten `Promise<T>`
 - [x] `unknown` ja tyyppivahti
 - [x] Strict mode
+- [x] `import type`
+- [x] `Record` ja `Partial`
+- [x] `?.`, `??` ja `!`
+- [x] Oma virheluokka ja `instanceof`
 
 ### Selain ja API
 
@@ -132,6 +138,22 @@ Tähän on koottu projektissa käytetyt React- ja TypeScript-käsitteet. Tavoitt
 
 **Näin selitän sen haastattelussa:** Käsittelen jokaisen käyttöliittymän tilan erikseen, jotta käyttäjä näkee aina, mitä tapahtuu.
 
+### Fragment
+
+**Mitä se on:** Komponentti voi palauttaa vain yhden juurielementin. Fragment `<>...</>` ryhmittelee useita elementtejä lisäämättä sivulle ylimääräistä HTML-elementtiä.
+
+**Missä projektissa:** `App.tsx` ryhmittelee tulosalueen otsikon ja viestin.
+
+**Näin selitän sen haastattelussa:** Fragment pitää HTML-rakenteen siistinä, kun tarvitsen ryhmän mutta en uutta `div`-elementtiä.
+
+### `createRoot` ja `StrictMode`
+
+**Mitä se on:** `createRoot` liittää React-sovelluksen HTML-sivun elementtiin. `StrictMode` tekee kehitystilassa lisätarkistuksia ja ajaa esimerkiksi efektit kahdesti, jotta puuttuva siivous huomataan. Se ei vaikuta tuotantoversioon.
+
+**Missä projektissa:** `main.tsx`.
+
+**Näin selitän sen haastattelussa:** `StrictMode` auttaa löytämään sivuvaikutuksiin liittyvät virheet jo kehityksessä.
+
 ## TypeScript
 
 ### Tyypit ja tyyppimerkinnät
@@ -197,6 +219,38 @@ Tähän on koottu projektissa käytetyt React- ja TypeScript-käsitteet. Tavoitt
 **Missä projektissa:** `tsconfig.app.json` ja `tsconfig.node.json`.
 
 **Näin selitän sen haastattelussa:** Strict mode siirtää monet ajonaikaiset virheet käännösvaiheeseen.
+
+### `import type`
+
+**Mitä se on:** `import type` tuo vain tyypin. Se poistuu kokonaan käännöksessä, joten selaimelle lähetettävään koodiin ei tule turhaa tuontia.
+
+**Missä projektissa:** Esimerkiksi `import type { HistoryItem } from './types.ts'`.
+
+**Näin selitän sen haastattelussa:** Erotan tyypit ajonaikaisesta koodista, jolloin riippuvuudet ovat selkeämpiä.
+
+### `Record` ja `Partial`
+
+**Mitä se on:** Ne ovat TypeScriptin valmiita aputyyppejä. `Record<Category, string>` vaatii merkkijonon jokaiselle luokalle. `Partial<T>` tekee kaikista kentistä valinnaisia.
+
+**Missä projektissa:** `labels.ts` käyttää `Record`-tyyppiä ja `test/fixtures.ts` käyttää `Partial`-tyyppiä.
+
+**Näin selitän sen haastattelussa:** Jos lisään uuden luokan, `Record` pakottaa lisäämään myös sen näkyvän nimen.
+
+### `?.`, `??` ja `!`
+
+**Mitä se on:** `a?.b` lukee kentän vain, jos `a` on olemassa. `a ?? b` käyttää arvoa `b`, jos `a` on `null` tai `undefined`. `a!` kertoo kääntäjälle, että arvo on varmasti olemassa, eikä se tee ajonaikaista tarkistusta.
+
+**Missä projektissa:** `errorRef.current?.scrollIntoView(...)` tiedostossa `App.tsx`, `??` tiedostossa `labels.ts` ja `!` tiedostossa `main.tsx`.
+
+**Näin selitän sen haastattelussa:** Käytän `!`-merkkiä vain, kun arvo on varmasti olemassa, kuten `index.html`-tiedoston `root`-elementti.
+
+### Oma virheluokka ja `instanceof`
+
+**Mitä se on:** `class ApiError extends Error` luo oman virhetyypin, jolla voi olla lisätietoa, kuten HTTP-tilakoodi. `instanceof` tarkistaa ajon aikana, onko virhe tätä tyyppiä.
+
+**Missä projektissa:** `api.ts` heittää `ApiError`-virheen, ja `App.tsx` näyttää sen viestin käyttäjälle.
+
+**Näin selitän sen haastattelussa:** Tunnetut virheet saavat selkeän viestin, ja odottamattomat virheet yleisen viestin.
 
 ## Selain ja API
 
