@@ -3,6 +3,7 @@ import type { ClassificationResult } from './types.ts'
 
 // Long enough for a backend that is waking up from zero replicas.
 const REQUEST_TIMEOUT_MS = 45_000
+const WAKE_TIMEOUT_MS = 60_000
 
 const CONNECTION_ERROR = 'Palvelimeen ei saada yhteyttä. Yritä hetken kuluttua uudelleen.'
 const TIMEOUT_ERROR = 'Palvelin ei vastannut ajoissa. Yritä hetken kuluttua uudelleen.'
@@ -51,6 +52,19 @@ async function readErrorMessage(response: Response): Promise<string> {
     // The error body was not JSON, so the general message below is used.
   }
   return UNEXPECTED_ERROR
+}
+
+// Starts a sleeping backend before the first request. It makes no model call, so it is free.
+export async function wakeBackend(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_URL}/api/health`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(WAKE_TIMEOUT_MS),
+    })
+    return response.ok
+  } catch {
+    return false
+  }
 }
 
 export async function classify(text: string): Promise<ClassificationResult> {

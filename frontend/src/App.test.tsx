@@ -1,18 +1,22 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.tsx'
-import { ApiError, classify } from './api.ts'
+import { ApiError, classify, wakeBackend } from './api.ts'
 import { makeResult } from './test/fixtures.ts'
 import type { ClassificationResult } from './types.ts'
+import { WAKING_NOTICE_DELAY_MS } from './useBackendWakeUp.ts'
 
 vi.mock('./api.ts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./api.ts')>()),
   classify: vi.fn(),
+  wakeBackend: vi.fn(),
 }))
 
 const classifyMock = vi.mocked(classify)
+const wakeMock = vi.mocked(wakeBackend)
 const STORAGE_KEY = 'tenant-request-classifier.history.v1'
+const WAKING_TEXT = /Ensimmäinen haku voi kestää noin 30 sekuntia/
 
 async function submitExample(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: 'Vika' }))
@@ -21,6 +25,86 @@ async function submitExample(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   classifyMock.mockReset()
+  wakeMock.mockReset()
+  wakeMock.mockResolvedValue(true)
+})
+
+describe('App backend wake-up', () => {
+  function pendingWake() {
+    let finish: (ok: boolean) => void = () => {}
+    wakeMock.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+    )
+    return (ok: boolean) => finish(ok)
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('wakes the backend when the page opens', async () => {
+    render(<App />)
+    await act(async () => {})
+    expect(wakeMock).toHaveBeenCalledOnce()
+    expect(classifyMock).not.toHaveBeenCalled()
+  })
+
+  it('shows a notice while the backend starts and hides it when ready', async () => {
+    const finish = pendingWake()
+    render(<App />)
+    expect(screen.queryByText(WAKING_TEXT)).not.toBeInTheDocument()
+
+    act(() => {
+      vi.advanceTimersByTime(WAKING_NOTICE_DELAY_MS)
+    })
+    expect(screen.getByText(WAKING_TEXT)).toBeInTheDocument()
+
+    await act(async () => {
+      finish(true)
+    })
+    expect(screen.queryByText(WAKING_TEXT)).not.toBeInTheDocument()
+  })
+
+  it('shows no notice when the backend is already running', async () => {
+    render(<App />)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(WAKING_NOTICE_DELAY_MS * 2)
+    })
+    expect(screen.queryByText(WAKING_TEXT)).not.toBeInTheDocument()
+  })
+
+  it('explains the wait once when classifying during startup', async () => {
+    const finishWake = pendingWake()
+    let finishClassify: (result: ClassificationResult) => void = () => {}
+    classifyMock.mockReturnValue(
+      new Promise((resolve) => {
+        finishClassify = resolve
+      }),
+    )
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vika' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Luokittele pyyntö' }))
+    act(() => {
+      vi.advanceTimersByTime(WAKING_NOTICE_DELAY_MS)
+    })
+
+    expect(screen.getAllByText(WAKING_TEXT)).toHaveLength(1)
+    expect(screen.queryByText('Luokitellaan pyyntöä…')).not.toBeInTheDocument()
+
+    await act(async () => {
+      finishWake(true)
+      finishClassify(makeResult())
+    })
+    expect(screen.queryByText(WAKING_TEXT)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Vastausehdotus')).toBeInTheDocument()
+  })
 })
 
 describe('App', () => {

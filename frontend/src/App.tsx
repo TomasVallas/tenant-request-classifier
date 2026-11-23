@@ -6,6 +6,7 @@ import { RequestForm } from './components/RequestForm.tsx'
 import { ResultCard } from './components/ResultCard.tsx'
 import { createHistoryItem, loadHistory, saveHistory, upsertHistoryItem } from './history.ts'
 import type { ClassificationResult, HistoryItem } from './types.ts'
+import { useBackendWakeUp } from './useBackendWakeUp.ts'
 
 interface CurrentResult {
   result: ClassificationResult
@@ -13,6 +14,7 @@ interface CurrentResult {
 }
 
 const GENERIC_ERROR = 'Luokittelu epäonnistui. Yritä hetken kuluttua uudelleen.'
+const WAKING_MESSAGE = 'Palvelu käynnistyy. Ensimmäinen haku voi kestää noin 30 sekuntia.'
 
 export default function App() {
   const [text, setText] = useState('')
@@ -22,6 +24,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
 
   const errorRef = useRef<HTMLParagraphElement>(null)
+  const isWaking = useBackendWakeUp()
 
   useEffect(() => {
     saveHistory(history)
@@ -75,6 +78,7 @@ export default function App() {
             onChange={setText}
             onSubmit={handleSubmit}
             isLoading={isLoading}
+            statusMessage={isWaking && !isLoading ? WAKING_MESSAGE : null}
           />
         </section>
 
@@ -82,7 +86,7 @@ export default function App() {
           {isLoading && (
             <div className="state" role="status">
               <span className="spinner" aria-hidden="true" />
-              Luokitellaan pyyntöä…
+              {isWaking ? WAKING_MESSAGE : 'Luokitellaan pyyntöä…'}
             </div>
           )}
           {!isLoading && error && (

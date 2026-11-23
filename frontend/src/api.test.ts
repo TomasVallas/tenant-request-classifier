@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, classify } from './api.ts'
+import { ApiError, classify, wakeBackend } from './api.ts'
 import { makeResult } from './test/fixtures.ts'
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -17,6 +17,31 @@ function mockFetch(implementation: () => Promise<Response>) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('wakeBackend', () => {
+  it('calls the health endpoint without a request body', async () => {
+    const fetchMock = mockFetch(async () => jsonResponse({ status: 'ok', provider: 'fake' }))
+
+    await expect(wakeBackend()).resolves.toBe(true)
+
+    const [url, options] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toMatch(/\/api\/health$/)
+    expect(options.method).toBeUndefined()
+    expect(options.body).toBeUndefined()
+  })
+
+  it('returns false for an error response', async () => {
+    mockFetch(async () => new Response('Unavailable', { status: 503 }))
+    await expect(wakeBackend()).resolves.toBe(false)
+  })
+
+  it('does not throw on a network failure', async () => {
+    mockFetch(async () => {
+      throw new TypeError('Failed to fetch')
+    })
+    await expect(wakeBackend()).resolves.toBe(false)
+  })
 })
 
 describe('classify', () => {

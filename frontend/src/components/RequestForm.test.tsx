@@ -71,6 +71,19 @@ describe('RequestForm', () => {
     expect(screen.getByText(/^4 \/ 2\s000$/)).toBeInTheDocument()
   })
 
+  it('shows a status message from the parent', () => {
+    render(
+      <RequestForm
+        value=""
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        isLoading={false}
+        statusMessage="Palvelu käynnistyy."
+      />,
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('Palvelu käynnistyy.')
+  })
+
   it('disables the button while loading', () => {
     renderForm('Hana vuotaa', true)
     expect(screen.getByRole('button', { name: 'Luokitellaan…' })).toBeDisabled()

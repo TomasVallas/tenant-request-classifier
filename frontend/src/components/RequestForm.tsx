@@ -7,6 +7,7 @@ interface RequestFormProps {
   onChange: (value: string) => void
   onSubmit: (text: string) => void
   isLoading: boolean
+  statusMessage?: string | null
 }
 
 const numberFormat = new Intl.NumberFormat('fi-FI')
@@ -15,7 +16,13 @@ const MAX_LABEL = numberFormat.format(MAX_REQUEST_LENGTH)
 const EMPTY_ERROR = 'Kirjoita palvelupyyntö ennen lähettämistä.'
 const TOO_LONG_ERROR = `Palvelupyyntö saa olla enintään ${MAX_LABEL} merkkiä.`
 
-export function RequestForm({ value, onChange, onSubmit, isLoading }: RequestFormProps) {
+export function RequestForm({
+  value,
+  onChange,
+  onSubmit,
+  isLoading,
+  statusMessage = null,
+}: RequestFormProps) {
   const [triedEmptySubmit, setTriedEmptySubmit] = useState(false)
 
   const trimmed = value.trim()
@@ -68,9 +75,14 @@ export function RequestForm({ value, onChange, onSubmit, isLoading }: RequestFor
           {numberFormat.format(trimmed.length)} / {MAX_LABEL}
         </span>
       </div>
-      <button type="submit" className="button button--primary" disabled={isLoading}>
-        {isLoading ? 'Luokitellaan…' : 'Luokittele pyyntö'}
-      </button>
+      <div className="request-form__actions">
+        <button type="submit" className="button button--primary" disabled={isLoading}>
+          {isLoading ? 'Luokitellaan…' : 'Luokittele pyyntö'}
+        </button>
+        <span className="request-form__status" role="status">
+          {statusMessage}
+        </span>
+      </div>
     </form>
   )
 }
