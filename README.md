@@ -77,6 +77,18 @@ ruff check .
 ruff format --check .
 ```
 
+### Using a real model
+
+Set `LLM_PROVIDER` and the provider's values in `backend/.env`, then restart the server. `GET /api/health` shows the active provider.
+
+| `LLM_PROVIDER` | Required settings |
+| --- | --- |
+| `azure_openai` | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION` |
+| `openai` | `OPENAI_API_KEY`, `OPENAI_MODEL` |
+| `anthropic` | `ANTHROPIC_API_KEY`, optionally `ANTHROPIC_MODEL` |
+
+The model must support structured outputs. If an OpenAI or Azure model rejects the temperature parameter, set `LLM_TEMPERATURE=none`.
+
 ### Frontend
 
 _Coming in phase 4._
