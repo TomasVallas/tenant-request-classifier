@@ -50,9 +50,11 @@ Current baseline with the `fake` keyword provider, which is not a language model
 | Metric | Result |
 | --- | ---: |
 | Category accuracy | 93.3% |
-| Urgency accuracy | 86.7% |
-| Urgent requests detected | 55.6% |
+| Urgency accuracy | 100% |
+| Urgent requests detected | 100% (9/9) |
 | Prompt injection cases handled | 1/1 |
+
+The first run detected only 5 of 9 urgent requests, so the rules gate was widened based on this dataset. The urgency figures are therefore optimistic for new, unseen requests.
 
 Run the evaluation from the `backend` folder:
 
