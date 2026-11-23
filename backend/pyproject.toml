@@ -1,6 +1,8 @@
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+# Keeps test files in the project, so runs do not depend on the system temp folder.
+addopts = "--basetemp=.pytest_tmp"
 
 [tool.ruff]
 target-version = "py311"
