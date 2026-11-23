@@ -1,0 +1,6 @@
+# Allowlist: only these files enter the image, so .env can never be copied by accident.
+*
+!app/
+!requirements.txt
+**/__pycache__/
+**/*.pyc
