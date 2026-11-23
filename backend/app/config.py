@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     app_env: AppEnv = "production"
     frontend_origin: str = "http://localhost:5173"
     rate_limit_per_minute: int = Field(default=20, gt=0)
+    # Enable only behind a proxy that appends the client IP to X-Forwarded-For.
+    trust_proxy_headers: bool = False
 
     @field_validator("llm_temperature", mode="before")
     @classmethod

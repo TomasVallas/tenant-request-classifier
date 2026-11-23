@@ -53,16 +53,46 @@ class SlidingWindowRateLimiter:
         self._last_purge = now
 
 
+def _strip_port(address: str) -> str:
+    if address.startswith("["):
+        return address[1:].split("]", 1)[0]
+    if address.count(":") == 1:
+        return address.split(":", 1)[0]
+    return address
+
+
+def get_client_key(request: Request, trust_proxy: bool) -> str:
+    """Identify the client for rate limiting.
+
+    Behind a proxy, only the rightmost X-Forwarded-For entry is added by the proxy.
+    Entries to its left come from the client and can be spoofed to avoid the limit.
+    """
+    if trust_proxy:
+        forwarded = request.headers.getlist("x-forwarded-for")
+        if forwarded:
+            rightmost = _strip_port(forwarded[-1].split(",")[-1].strip())
+            if rightmost:
+                return rightmost
+    return request.client.host if request.client else "unknown"
+
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp, limiter: SlidingWindowRateLimiter, path: str) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        limiter: SlidingWindowRateLimiter,
+        path: str,
+        trust_proxy: bool = False,
+    ) -> None:
         super().__init__(app)
         self._limiter = limiter
         self._path = path
+        self._trust_proxy = trust_proxy
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.method == "POST" and request.url.path == self._path:
-            client_ip = request.client.host if request.client else "unknown"
-            if not self._limiter.allow(client_ip):
+            client_key = get_client_key(request, self._trust_proxy)
+            if not self._limiter.allow(client_key):
                 return JSONResponse(
                     status_code=429,
                     content={"detail": RATE_LIMIT_MESSAGE},

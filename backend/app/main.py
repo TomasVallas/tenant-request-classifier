@@ -62,7 +62,12 @@ def create_app(
 
     # The middleware added last runs first. CORS must wrap the rate limit so that
     # browsers can also read the 429 response.
-    app.add_middleware(RateLimitMiddleware, limiter=limiter, path=CLASSIFY_PATH)
+    app.add_middleware(
+        RateLimitMiddleware,
+        limiter=limiter,
+        path=CLASSIFY_PATH,
+        trust_proxy=active_settings.trust_proxy_headers,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=active_settings.cors_origins,

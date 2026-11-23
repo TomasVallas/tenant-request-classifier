@@ -123,6 +123,24 @@ def test_rate_limit_returns_429_with_cors_headers() -> None:
     assert response.headers["access-control-allow-origin"] == FRONTEND_ORIGIN
 
 
+def test_spoofed_forwarded_header_does_not_bypass_rate_limit() -> None:
+    settings = make_settings(rate_limit_per_minute=1, trust_proxy_headers=True)
+    client = TestClient(create_app(settings=settings))
+    body = {"text": "Hana vuotaa"}
+
+    first = client.post("/api/classify", json=body, headers={"X-Forwarded-For": "1.1.1.1, 9.9.9.9"})
+    second = client.post(
+        "/api/classify", json=body, headers={"X-Forwarded-For": "2.2.2.2, 9.9.9.9"}
+    )
+    other_client = client.post(
+        "/api/classify", json=body, headers={"X-Forwarded-For": "2.2.2.2, 8.8.8.8"}
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert other_client.status_code == 200
+
+
 def test_rate_limit_does_not_apply_to_health() -> None:
     client = TestClient(create_app(settings=make_settings(rate_limit_per_minute=1)))
     for _ in range(3):

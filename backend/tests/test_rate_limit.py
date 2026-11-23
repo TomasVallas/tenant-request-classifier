@@ -1,4 +1,7 @@
-from app.rate_limit import SlidingWindowRateLimiter
+import pytest
+from starlette.requests import Request
+
+from app.rate_limit import SlidingWindowRateLimiter, get_client_key
 
 
 class FakeClock:
@@ -50,3 +53,40 @@ def test_inactive_clients_are_purged() -> None:
     clock.now += 61
     limiter.allow("3.3.3.3")
     assert limiter.tracked_keys == 1
+
+
+def make_request(*forwarded: str) -> Request:
+    headers = [(b"x-forwarded-for", value.encode()) for value in forwarded]
+    return Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/api/classify",
+            "headers": headers,
+            "client": ("10.0.0.5", 4321),
+        }
+    )
+
+
+def test_client_key_ignores_forwarded_header_by_default() -> None:
+    assert get_client_key(make_request("9.9.9.9"), trust_proxy=False) == "10.0.0.5"
+
+
+@pytest.mark.parametrize(
+    ("forwarded", "expected"),
+    [
+        (("9.9.9.9",), "9.9.9.9"),
+        (("1.1.1.1, 9.9.9.9",), "9.9.9.9"),
+        (("1.1.1.1", "2.2.2.2, 9.9.9.9"), "9.9.9.9"),
+        (("9.9.9.9:51234",), "9.9.9.9"),
+        (("2001:db8::1",), "2001:db8::1"),
+        (("[2001:db8::1]:51234",), "2001:db8::1"),
+    ],
+)
+def test_client_key_uses_rightmost_proxy_entry(forwarded: tuple[str, ...], expected: str) -> None:
+    assert get_client_key(make_request(*forwarded), trust_proxy=True) == expected
+
+
+@pytest.mark.parametrize("forwarded", [(), ("",), ("1.1.1.1, ",)])
+def test_client_key_falls_back_to_peer_address(forwarded: tuple[str, ...]) -> None:
+    assert get_client_key(make_request(*forwarded), trust_proxy=True) == "10.0.0.5"

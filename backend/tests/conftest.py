@@ -15,6 +15,7 @@ def make_settings(**overrides: object) -> Settings:
         "app_env": "production",
         "frontend_origin": FRONTEND_ORIGIN,
         "rate_limit_per_minute": 100,
+        "trust_proxy_headers": False,
         "llm_timeout_seconds": 1.0,
         "azure_openai_endpoint": None,
         "azure_openai_api_key": None,
