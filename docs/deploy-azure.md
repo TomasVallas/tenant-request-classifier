@@ -71,7 +71,7 @@ Change `$ghUser` if you deploy from a fork. It must be lowercase.
 $ghUser = "tomasvallas"
 $rg = "rg-tenant-classifier-demo"
 $location = "swedencentral"
-$swaLocation = "westeurope"
+$swaLocation = "eastus2"
 $envName = "cae-tenant-classifier"
 $appName = "ca-tenant-classifier-api"
 $swaName = "swa-tenant-classifier"
@@ -214,7 +214,7 @@ az containerapp revision restart --name $appName --resource-group $rg --revision
 | The browser shows a connection error | `FRONTEND_ORIGIN` must exactly match the frontend address, with `https://` and no trailing slash |
 | The API returns 503 | Read the logs. `error_type` shows the failure without exposing request text |
 | The first request is slow | The container is starting from zero replicas |
-| A region is rejected | Use a region from the error message and set `$location` or `$swaLocation` again |
+| `RequestDisallowedByAzure` for a region | The region is not accepting new customers on this subscription. Set `$location` or `$swaLocation` to another region and run the command again |
 
 Read the live logs:
 
