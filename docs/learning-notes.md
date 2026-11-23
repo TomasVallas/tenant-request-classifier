@@ -19,6 +19,7 @@ Tähän on koottu projektissa käytetyt React- ja TypeScript-käsitteet. Tavoitt
 - [x] Ehdollinen renderöinti
 - [x] Fragment
 - [x] `createRoot` ja `StrictMode`
+- [x] Oma hook
 
 ### TypeScript
 
@@ -153,6 +154,14 @@ Tähän on koottu projektissa käytetyt React- ja TypeScript-käsitteet. Tavoitt
 **Missä projektissa:** `main.tsx`.
 
 **Näin selitän sen haastattelussa:** `StrictMode` auttaa löytämään sivuvaikutuksiin liittyvät virheet jo kehityksessä.
+
+### Oma hook
+
+**Mitä se on:** Oma hook on `use`-alkuinen funktio, joka kokoaa tilan ja efektit uudelleenkäytettäväksi logiikaksi. Se ei piirrä mitään, vaan palauttaa arvon komponentin käyttöön.
+
+**Missä projektissa:** `useBackendWakeUp.ts` herättää backendin sivun auetessa ja kertoo, käynnistyykö palvelu vielä.
+
+**Näin selitän sen haastattelussa:** Azure sammuttaa backendin käyttämättömänä, joten hook käynnistää sen ilmaisella terveystarkistuksella ennen ensimmäistä hakua. Odotusviesti näkyy vain, jos vastaus viipyy yli 1,5 sekuntia.
 
 ## TypeScript
 

@@ -102,6 +102,7 @@ Limits such as the confidence range live in Pydantic validators instead of JSON 
 | `components/HistoryList.tsx` | Processed requests and clear button |
 | `api.ts` | Typed API client with runtime response validation |
 | `history.ts` | Safe `localStorage` access |
+| `useBackendWakeUp.ts` | Wakes a sleeping backend when the page opens and reports startup |
 | `types.ts` | Types that mirror the backend schema |
 
 ## Security and privacy
@@ -142,6 +143,6 @@ The steps are in the [deployment guide](deploy-azure.md).
 | --- | --- | --- |
 | Rules after the model | Safety does not depend on model behaviour | Keyword rules can miss unusual wording |
 | In-memory rate limit | No extra service for a demo | Works per replica and resets on restart |
-| Scale to zero | Almost free when idle | The first request is slower |
+| Scale to zero | Almost free when idle | A cold start takes about 25 s, so the page wakes the backend on load with a free health check and shows a notice |
 | History in `localStorage` | No database or stored personal data | Stays in one browser |
 | One request at a time in evaluation | Simple and easy to measure | Slower on large datasets |
