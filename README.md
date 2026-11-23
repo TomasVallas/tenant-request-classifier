@@ -22,7 +22,7 @@ _Coming in phase 7, with instructions for capturing it._
 
 ## Live demo
 
-_Coming after the Azure deployment in phase 6._
+_The link will be added after deployment. See the [Azure deployment guide](docs/deploy-azure.md)._
 
 ## Architecture
 
@@ -120,7 +120,7 @@ cp .env.example .env           # Windows PowerShell: Copy-Item .env.example .env
 npm run dev
 ```
 
-The app opens at <http://localhost:5173>.
+The app opens at <http://localhost:5173>. If Windows PowerShell blocks `npm`, use `npm.cmd`.
 
 ## Tests and CI
 
