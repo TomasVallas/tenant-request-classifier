@@ -47,7 +47,39 @@ _Coming in phase 3._
 
 ## Running locally
 
-_Backend instructions coming in phase 1, frontend instructions in phase 4._
+### Backend
+
+Requires Python 3.11+. The default `fake` provider needs no API key.
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate      # Windows PowerShell: .venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+cp .env.example .env           # Windows PowerShell: Copy-Item .env.example .env
+uvicorn app.main:app --reload
+```
+
+The API runs at <http://localhost:8000>, with interactive docs at <http://localhost:8000/docs>.
+
+Try it from the `backend` folder in a second terminal. In Windows PowerShell, write `curl.exe` instead of `curl`.
+
+```bash
+curl http://localhost:8000/api/health
+curl -X POST http://localhost:8000/api/classify -H "Content-Type: application/json" --data-binary "@examples/urgent.json"
+```
+
+Run the backend checks:
+
+```bash
+pytest
+ruff check .
+ruff format --check .
+```
+
+### Frontend
+
+_Coming in phase 4._
 
 ## Tests and CI
 
