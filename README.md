@@ -1,8 +1,10 @@
 # Tenant Request Classifier
 
+[![CI](https://github.com/TomasVallas/tenant-request-classifier/actions/workflows/ci.yml/badge.svg)](https://github.com/TomasVallas/tenant-request-classifier/actions/workflows/ci.yml)
+
 > **Tiivistelmä:** Sovellus luokittelee vuokralaisen suomenkielisen palvelupyynnön, arvioi sen kiireellisyyden ja ehdottaa kohteliasta vastausta. Kielimalli vain ehdottaa, deterministiset säännöt ja ihminen päättävät, eikä sovellus koskaan lähetä vastausta itse. Kyseessä on portfoliodemo kuvitteelliselle vuokrataloyhtiölle, ja kaikki data on keksittyä.
 
-> **Status:** under construction. This README describes the planned application, and sections marked _Coming in phase N_ are not implemented yet.
+> **Status:** the backend, frontend, evaluation and CI are implemented and run locally. Sections marked _Coming in phase N_ are not done yet.
 
 ## What it does and why
 
@@ -45,23 +47,22 @@ flowchart LR
 
 The pipeline is evaluated against 30 fictional labelled requests, including ambiguous messages, typos, two issues in one message and a prompt injection attempt. See the [full results](backend/eval/results.md).
 
-Current baseline with the `fake` keyword provider, which is not a language model:
+| Metric | `gpt-6-luna` | `fake` keyword baseline |
+| --- | ---: | ---: |
+| Category accuracy | 96.7% | 93.3% |
+| Urgency accuracy | 96.7% | 100% |
+| Urgent requests detected | 100% (9/9) | 100% (9/9) |
+| Prompt injection cases handled | 1/1 | 1/1 |
+| Mean latency | 2.8 s | under 1 ms |
 
-| Metric | Result |
-| --- | ---: |
-| Category accuracy | 93.3% |
-| Urgency accuracy | 100% |
-| Urgent requests detected | 100% (9/9) |
-| Prompt injection cases handled | 1/1 |
-
-The first run detected only 5 of 9 urgent requests, so the rules gate was widened based on this dataset. The urgency figures are therefore optimistic for new, unseen requests.
+Both columns include the deterministic rules gate. Its first version detected only 5 of 9 urgent requests, so it was widened based on this dataset, and the urgency figures are therefore optimistic for new, unseen requests. With 30 requests, one error changes accuracy by 3.3 percentage points.
 
 Run the evaluation from the `backend` folder:
 
 ```bash
 python -m eval.run_eval --provider fake
-python -m eval.run_eval --provider azure_openai --limit 3   # small paid trial, writes no file
-python -m eval.run_eval --provider azure_openai             # full run, updates results.md
+python -m eval.run_eval --provider openai --limit 3   # small paid trial, writes no file
+python -m eval.run_eval --provider openai             # full run, updates results.md
 ```
 
 ## Running locally
@@ -110,11 +111,36 @@ The model must support structured outputs. If an OpenAI or Azure model rejects t
 
 ### Frontend
 
-_Coming in phase 4._
+Requires Node.js 24. Start the backend first, then run:
+
+```bash
+cd frontend
+npm ci
+cp .env.example .env           # Windows PowerShell: Copy-Item .env.example .env
+npm run dev
+```
+
+The app opens at <http://localhost:5173>.
 
 ## Tests and CI
 
-_Coming in phase 5._
+GitHub Actions runs on every pull request and every push to `main`.
+
+| Part | Checks |
+| --- | --- |
+| Backend (Python 3.11 and 3.12) | ruff lint and format check, pytest with the `fake` provider |
+| Frontend (Node.js 24) | TypeScript strict typecheck, ESLint, Vitest with React Testing Library, production build |
+
+CI uses no API keys and makes no paid model calls. Provider integrations are tested against a local stub server.
+
+Run the frontend checks from the `frontend` folder:
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
 
 ## Limitations and future work
 
